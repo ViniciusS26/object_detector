@@ -1,385 +1,229 @@
-# Detector de objetos por TCP
+ # Detector de objetos
 
-Aplicacao Android em Flutter que captura uma foto e envia a imagem para um
-servidor Python via socket TCP. O servidor usa OpenCV e YOLO para detectar
-objetos e devolve os resultados em JSON.
+Aplicação de detecção de objetos composta por um servidor Python e um cliente Flutter. O cliente captura uma foto pela câmera ou seleciona uma imagem da galeria, envia o JPEG ao servidor por TCP e exibe a imagem e os objetos detectados.
 
-## Estrutura
+## Funcionalidades
 
-```text
-client/   Aplicativo Flutter Android
-server/   Servidor Python TCP e dependencias
-```
-# Como executar
-## Servidor
+- Captura de imagens pela câmera do dispositivo.
+- Seleção de imagens da galeria.
+- Redimensionamento e compressão da imagem antes do envio.
+- Comunicação TCP entre o aplicativo e o servidor.
+- Detecção de objetos com YOLO11n.
+- Exibição dos objetos detectados em português.
 
-Execute a partir da raiz do projeto:
-projeto a 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r server\requirements.txt
-python server\server.py
-```
-
-Sempre ative o `.venv` antes de iniciar o servidor. Alternativamente, execute
-diretamente `\.venv\Scripts\python.exe server\server.py` sem ativar o ambiente.
-
-O modelo `yolo11n.pt` e baixado automaticamente pelo Ultralytics na primeira
-execucao. Ele e ignorado pelo Git por ser um arquivo grande.
-
-Sim. Dá para manter **exatamente essa arquitetura e protocolo**, mas trocar os nomes das mensagens retornadas pelo servidor para sinônimos mais naturais, sem alterar o funcionamento.
-
-### Versão adaptada
-
-**2. Servidor (Python):**
-
-* Recebe o cabeçalho de 4 bytes e lê exatamente os `N` bytes da imagem.
-* Salva a foto recebida na pasta `capturas/` com timestamp (`captura_YYYYMMDD_HHMMSS.jpg`).
-* Decodifica a imagem utilizando **OpenCV** (`cv2.imdecode`).
-* Realiza a inferência utilizando **YOLOv8n** (`ultralytics`).
-* Salva uma cópia da imagem com as marcações/bounding boxes em `capturas/anotadas/`.
-* Retorna via socket TCP uma mensagem contendo os **elementos identificados na imagem**, utilizando descrições como:
-
-  * **Indivíduo identificado**
-  * **Assento identificado**
-  * **Bolsa identificada**
-  * **Mesa identificada**
-  * **Veículo identificado**
-  * **Animal identificado**
-  * **Objeto identificado**
-* Caso nenhum elemento seja reconhecido, o servidor retorna **“Nenhum elemento identificado”**.
-
-
-Claro. Mantendo **o mesmo modelo, estrutura e comandos**, você pode trocar apenas as expressões por sinônimos mais naturais e profissionais:
-
-### 🚀 Como Executar o Servidor Python
-
-### 1. Requisitos Necessários
-
-* Python 3.10 ou versão superior instalado no computador.
-
-
-## 🚀 Como Executar o Servidor Python
-
-### 🐧 Linux
-
-#### 1. Abrir o terminal
-
-Abra o terminal e acesse a pasta onde o projeto está localizado:
-
-```bash
-cd caminho/do/projeto
-```
-
-Exemplo:
-
-```bash
-cd ~/trab2-sd-flutter
-```
-
-#### 2. Verificar a versão do Python
-
-Execute:
-
-```bash
-python3 --version
-```
-
-O projeto requer **Python 3.10 ou superior**.
-
-#### 3. Criar o ambiente virtual
-
-Caso a pasta `.venv` ainda não exista, crie o ambiente virtual:
-
-```bash
-python3 -m venv .venv
-```
-
-#### 4. Ativar o ambiente virtual
-
-Execute:
-
-```bash
-source .venv/bin/activate
-```
-
-Após a ativação, o terminal normalmente apresentará algo semelhante a:
+## Estrutura do projeto
 
 ```text
-(.venv) usuario@computador:~/trab2-sd-flutter$
+flutter_application_1/
+├── client/
+│   ├── lib/
+│   │   └── main.dart              # Aplicativo Flutter e cliente TCP
+│   ├── pubspec.yaml               # Dependências do app
+│   └── android/                   # Configuração Android
+├── server/
+│   ├── server.py                  # Servidor TCP e inferência YOLO
+│   ├── requirements.txt           # Dependências Python
+│   └── yolo11n.pt                 # Pesos do modelo YOLO
+└── README.md
 ```
 
-#### 5. Atualizar o `pip`
+## Pré-requisitos
+
+- Python 3.10 ou superior.
+- Flutter SDK instalado e configurado no `PATH`.
+- Android Studio, SDK Android e um dispositivo Android ou emulador para executar o app.
+- O arquivo `server/yolo11n.pt` presente no projeto.
+
+## Como executar no Linux
+
+Abra um terminal na raiz do projeto.
+
+### 1. Preparar e iniciar o servidor
 
 ```bash
-python3 -m pip install --upgrade pip
-```
-
-#### 6. Instalar as dependências
-
-Com o ambiente virtual ativado:
-
-```bash
-pip install -r requirements.txt
-```
-
-Aguarde a conclusão da instalação das bibliotecas necessárias.
-
-#### 7. Executar o servidor
-
-Após instalar as dependências:
-
-```bash
-python3 server.py
-```
-
-O servidor será iniciado e ficará disponível para receber as imagens enviadas pelo aplicativo.
-
----
-
-### 🪟 Windows
-
-#### 1. Abrir o PowerShell ou Prompt de Comando
-
-Abra o **PowerShell** ou o **Prompt de Comando (CMD)**.
-
-Acesse a pasta do projeto:
-
-```powershell
-cd caminho\do\projeto
-```
-
-Exemplo:
-
-```powershell
-cd C:\Users\Usuario\trab2-sd-flutter
-```
-
-#### 2. Verificar a versão do Python
-
-Execute:
-
-```powershell
-python --version
-```
-
-O projeto requer **Python 3.10 ou superior**.
-
-#### 3. Criar o ambiente virtual
-
-Caso a pasta `.venv` ainda não exista:
-
-```powershell
-python -m venv .venv
-```
-
-#### 4. Ativar o ambiente virtual
-
-No **PowerShell**, execute:
-
-```powershell
-.venv\Scripts\Activate.ps1
-```
-
-No **CMD**, utilize:
-
-```cmd
-.venv\Scripts\activate.bat
-```
-
-Após a ativação, deverá aparecer algo semelhante a:
-
-```text
-(.venv) C:\Users\Usuario\trab2-sd-flutter>
-```
-
-#### 5. Atualizar o `pip`
-
-```powershell
-python -m pip install --upgrade pip
-```
-
-#### 6. Instalar as dependências
-
-```powershell
-pip install -r requirements.txt
-```
-
-Aguarde até que todas as bibliotecas sejam instaladas.
-
-#### 7. Executar o servidor
-
-```powershell
-python server.py
-```
-
-O servidor ficará ativo aguardando as imagens enviadas pelo aplicativo Flutter.
-
----
-
-### ⚠️ Caso o PowerShell bloqueie a ativação da `.venv`
-
-Se aparecer uma mensagem informando que a execução de scripts está bloqueada, abra o PowerShell e execute:
-
-```powershell
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-```
-
-Depois, tente novamente:
-
-```powershell
-.venv\Scripts\Activate.ps1
-```
-
----
-
-### 🔄 Comandos resumidos
-
-#### Linux
-
-```bash
-cd ~/trab2-sd-flutter
+cd server
 python3 -m venv .venv
 source .venv/bin/activate
-python3 -m pip install --upgrade pip
-pip install -r requirements.txt
-python3 server.py
+python -m pip install -r requirements.txt
+python server.py --host 0.0.0.0 --port 5000
 ```
 
-#### Windows
+O servidor ficará aguardando conexões na porta `5000`.
 
-```powershell
-cd C:\Users\Usuario\trab2-sd-flutter
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-python server.py
-```
+### 2. Executar o aplicativo Flutter
 
-### ✅ Quando o servidor estiver funcionando
-
-O terminal deverá permanecer aberto enquanto o aplicativo Flutter estiver sendo utilizado. O servidor ficará aguardando uma conexão do dispositivo Android para receber a fotografia, processá-la e retornar o resultado da análise.
-
-
-##  Como Configurar e Executar o Aplicativo Flutter
-
-### 1. Conectar o Dispositivo e Executar o Aplicativo
-
-Com o dispositivo Android conectado ao computador por **USB** ou utilizando **depuração via Wi-Fi**, e após autorizar a conexão, execute no terminal:
+Em outro terminal:
 
 ```bash
+cd client
+flutter pub get
+flutter devices
 flutter run
 ```
 
-### 2. Definir o Endereço IP e a Porta do Servidor
+Para executar diretamente em um dispositivo específico:
 
-1. Na parte superior direita da tela do aplicativo, toque no **ícone de configurações** ⚙️ ou no **painel de status** localizado no topo.
-2. Informe o **endereço IP** apresentado pelo servidor `server.py` e mantenha a **porta `5000`**.
-3. Selecione a opção **“Verificar Conexão”** para confirmar se o dispositivo Android consegue estabelecer comunicação com o computador através da rede local.
-4. Após a confirmação, toque em **“Gravar Configurações”** para armazenar os dados informados.
-
-
-
-##  Roteiro de Demonstração — Etapas de Execução
-
-1. **Executar o Servidor:**
-
-   * Inicie o servidor utilizando `python server.py`.
-   * O terminal ficará disponível para novas solicitações e apresentará a mensagem **“Aguardando o recebimento de uma imagem...”**.
-
-2. **Utilizar o Aplicativo:**
-
-   * Verifique se o **endereço IP** e a **porta do servidor** estão configurados corretamente.
-   * Pressione o botão principal **“Capturar e Analisar”**.
-   * Fotografe um ou mais elementos, como **pessoa, cadeira, garrafa ou mochila**, e confirme a captura.
-
-3. **Processamento no Servidor:**
-
-   * O servidor recebe os dados enviados pelo aplicativo, armazena a imagem na pasta `capturas/` e inicia o processamento utilizando o **YOLO**.
-   * Após a análise, o servidor apresenta no terminal os elementos reconhecidos e encaminha o resultado para o aplicativo.
-
-4. **Apresentação do Resultado:**
-
-   * O aplicativo apresenta etiquetas (**badges**) contendo os nomes dos elementos identificados, por exemplo: **“Indivíduo identificado”** ou **“Bolsa identificada”**.
-   * Quando nenhum elemento reconhecível for encontrado, será apresentada a mensagem **“Nenhum elemento identificado”**.
-
-5. **Realizar uma Nova Captura:**
-
-   * Pressione novamente o botão **“Capturar e Analisar”** para registrar uma nova imagem.
-   * O resultado da análise anterior será substituído automaticamente pelo novo resultado.
-
-
-
-
-
-### Exemplo de resposta do servidor
-
-Em vez de:
-
-```text
-Pessoa detectada
-Cadeira detectada
-Mochila detectada
+```bash
+flutter run -d <id-do-dispositivo>
 ```
 
-pode retornar:
+## Como executar no Windows
 
-```text
-Indivíduo identificado
-Assento identificado
-Bolsa identificada
+Abra o PowerShell na raiz do projeto.
+
+### 1. Preparar e iniciar o servidor
+
+```powershell
+cd server
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+python server.py --host 0.0.0.0 --port 5000
 ```
 
-Ou, quando houver vários objetos:
+Se a política do PowerShell impedir a ativação do ambiente virtual, execute o servidor diretamente pelo Python do ambiente:
 
-```text
-Elementos identificados:
-- Indivíduo
-- Assento
-- Bolsa
-- Mesa
+```powershell
+.\.venv\Scripts\python.exe server.py --host 0.0.0.0 --port 5000
 ```
 
-E quando não houver detecção:
+### 2. Executar o aplicativo Flutter
 
-```text
-Nenhum elemento identificado
-```
-
-**Importante:** se isso for para o seu trabalho de **Android/Flutter + servidor Python**, eu manteria o protocolo dos **4 bytes + N bytes JPEG** exatamente como está, porque trocar apenas as mensagens de resultado não interfere na comunicação TCP.
-
-
-
-
-
-
-
-## Cliente Android
-
-Em outro terminal, execute a partir da pasta `client`:
+Em outro PowerShell:
 
 ```powershell
 cd client
 flutter pub get
+flutter devices
 flutter run
 ```
 
-No emulador Android padrao, informe `10.0.2.2` no campo IP do servidor. Em um
-celular fisico, informe o IP do computador na mesma rede Wi-Fi e libere a porta
-`5000` no firewall.
+Também é possível gerar o APK de debug:
 
-O cliente permite tirar uma foto pela camera ou selecionar uma imagem existente
-pela galeria. As duas opcoes usam o mesmo processamento e reconhecimento.
-
-## Protocolo TCP
-
-1. O cliente envia 4 bytes sem sinal com o tamanho da imagem em big-endian.
-2. O cliente envia os bytes da foto em JPEG, qualidade 80 e largura maxima de
-   1280 px.
-3. O servidor responde uma linha JSON, por exemplo:
-
-```json
-{"objects": [{"label": "person", "confidence": 0.91}]}
+```powershell
+flutter build apk --debug
 ```
+
+O APK será gerado em `client/build/app/outputs/flutter-apk/app-debug.apk`.
+
+## Configuração de IP e porta
+
+O cliente possui os campos **IP do servidor** e **Porta** na tela. Os valores iniciais são:
+
+```text
+IP:   10.0.2.2
+Porta: 5000
+```
+
+O endereço `10.0.2.2` é um alias especial do emulador Android que aponta para o computador hospedeiro. Ele deve ser usado quando o servidor estiver rodando no mesmo computador do emulador.
+
+Para um celular físico, o computador e o celular precisam estar na mesma rede. Nesse caso:
+
+1. Descubra o IPv4 do computador.
+	 - Linux: `ip addr` ou `hostname -I`.
+	 - Windows: `ipconfig`.
+2. Informe esse IPv4 no campo **IP do servidor** do app.
+3. Mantenha a porta igual nos dois lados, por exemplo `5000`.
+4. Libere a porta no firewall do sistema, caso necessário.
+
+O servidor aceita os parâmetros pela linha de comando:
+
+```bash
+python server.py --host 0.0.0.0 --port 5000
+```
+
+O cliente abre uma conexão TCP com o IP e a porta informados. A imagem é enviada precedida por um cabeçalho de 4 bytes contendo o tamanho do JPEG, e o servidor responde com um JSON terminado por quebra de linha.
+
+## Modelo e biblioteca de detecção
+
+O projeto utiliza o modelo **YOLO11n** (`server/yolo11n.pt`) por meio da biblioteca **Ultralytics**. A versão `n` significa *nano*: é uma variante menor e mais rápida, adequada para uma aplicação que precisa responder com baixa latência, embora tenha menos capacidade que variantes maiores.
+
+O fluxo de detecção no servidor é:
+
+1. O servidor recebe os bytes do JPEG pela conexão TCP.
+2. O OpenCV decodifica os bytes em uma imagem (`cv2.imdecode`).
+3. A biblioteca Ultralytics executa o modelo YOLO sobre a imagem.
+4. O modelo localiza objetos usando caixas delimitadoras e classifica cada caixa.
+5. O servidor envia o nome da classe e a confiança de cada detecção em JSON.
+
+Trecho essencial do servidor:
+
+```python
+from ultralytics import YOLO
+
+model = YOLO("yolo11n.pt")
+result = model(image, verbose=False)[0]
+
+objects = [
+		{
+				"label": result.names[int(class_id)],
+				"confidence": round(float(confidence), 3),
+		}
+		for class_id, confidence in zip(result.boxes.cls, result.boxes.conf)
+]
+```
+
+O modelo treinado com as classes COCO pode reconhecer objetos como pessoas, garrafas, cadeiras, carros, animais, alimentos e outros itens. A tradução dos nomes para português é feita no cliente Flutter antes da apresentação na tela.
+
+## Código mínimo do servidor
+
+O servidor usa TCP para receber uma imagem por conexão:
+
+```python
+image_size = struct.unpack("!I", receive_exact(connection, 4))[0]
+jpeg = receive_exact(connection, image_size)
+objects = detect_objects(model, jpeg)
+response = {"objects": objects}
+connection.sendall((json.dumps(response) + "\n").encode("utf-8"))
+```
+
+O código completo está em [server/server.py](server/server.py).
+
+## Código mínimo do aplicativo
+
+O app seleciona ou captura a imagem e envia os bytes preparados ao cliente TCP:
+
+```dart
+final photo = await _imagePicker.pickImage(source: ImageSource.gallery);
+if (photo == null) return;
+
+final photoBytes = await photo.readAsBytes();
+final jpeg = _prepareJpeg(photoBytes);
+final objects = await TcpDetectorClient(
+	host: _hostController.text.trim(),
+	port: int.parse(_portController.text.trim()),
+).detect(jpeg);
+```
+
+O código completo do app está em [client/lib/main.dart](client/lib/main.dart).
+
+## Capturas de tela
+
+As capturas abaixo representam o fluxo principal do aplicativo: seleção da imagem, imagem carregada na tela e resultado da detecção.
+
+> As imagens anexadas ao trabalho devem ser salvas no diretório `docs/screenshots/` com os nomes abaixo para que sejam exibidas no GitHub.
+
+### Seleção da imagem na galeria
+
+<img src="docs/screenshots/foto_1.png" alt="Seleção de imagem na galeria" width="300">
+
+
+
+### Imagem capturada ou carregada
+
+<img src="docs/screenshots/foto_4.png" alt="Imagem carregada no aplicativo" width="300">
+
+### Resultado da detecção
+
+<img src="docs/screenshots/foto_3.png" alt="Objetos detectados no aplicativo" width="300">
+
+### Resultado
+
+<img src="docs/screenshots/foto_2.png" alt="Seleção de imagem na galeria" width="300">
+
+## Observações
+
+- O servidor precisa estar em execução antes de pressionar **Tirar foto** ou **Enviar da galeria**.
+- A imagem é reduzida para no máximo 1280 pixels de largura e codificada em JPEG antes do envio.
+- O limite máximo aceito pelo servidor é de 20 MB por imagem.
+- Em caso de erro de conexão, confira o IP, a porta, a rede local e as regras do firewall.
